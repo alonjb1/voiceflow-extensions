@@ -46,7 +46,7 @@ function initFileUpload() {
 
   const uploadButton = document.createElement('button');
   uploadButton.textContent = 'Upload File';
-  uploadButton.style.display = 'none';
+  uploadButton.style.display = 'none'; // Initially hidden
   uploadButton.addEventListener('click', () => fileInput.click());
   uploadButton.id = 'upload-file-button';
 
@@ -72,7 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
       initFileUpload();
 
       // Listen for custom commands from Voiceflow
-      window.voiceflow.chat.on('customCommand', handleCustomCommand);
+      window.voiceflow.chat.on('customCommand', (data) => {
+        if (data.command) {
+          handleCustomCommand(data.command);
+        }
+      });
     }
   }, 1000);
 });
