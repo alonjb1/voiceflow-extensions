@@ -64,16 +64,9 @@ function handleCustomCommand(command) {
   }
 }
 
-// Polling function to check for custom commands
-function pollCustomCommand() {
-  const chatIframe = document.querySelector('#voiceflow-chat iframe');
-  if (chatIframe) {
-    chatIframe.contentWindow.postMessage({ type: 'getCustomCommand' }, '*');
-  }
-}
-
+// Listen for custom commands from Voiceflow via postMessage
 window.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'customCommand' && event.data.command) {
+  if (event.data && event.data.command) {
     handleCustomCommand(event.data.command);
   }
 });
@@ -81,10 +74,10 @@ window.addEventListener('message', (event) => {
 // Wait for the Voiceflow chat widget to load and then initialize the file upload
 document.addEventListener('DOMContentLoaded', () => {
   const checkChatLoaded = setInterval(() => {
-    if (document.querySelector('#voiceflow-chat iframe')) {
+    const chatIframe = document.querySelector('#voiceflow-chat iframe');
+    if (chatIframe) {
       clearInterval(checkChatLoaded);
       initFileUpload();
-      setInterval(pollCustomCommand, 1000); // Poll for custom commands every second
     }
   }, 1000);
 });
