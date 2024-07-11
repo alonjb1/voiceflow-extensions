@@ -38,6 +38,7 @@ function handleFileUpload(event) {
 
 // Function to initialize the file input and handle file selection
 function initFileUpload() {
+  const chatWindow = document.querySelector('#voiceflow-chat');
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.style.display = 'none';
@@ -45,10 +46,33 @@ function initFileUpload() {
 
   const uploadButton = document.createElement('button');
   uploadButton.textContent = 'Upload File';
+  uploadButton.style.display = 'none';
   uploadButton.addEventListener('click', () => fileInput.click());
+  uploadButton.id = 'upload-file-button';
 
-  document.body.appendChild(uploadButton);
+  chatWindow.appendChild(fileInput);
+  chatWindow.appendChild(uploadButton);
 }
 
-// Initialize the file upload on page load
-document.addEventListener('DOMContentLoaded', initFileUpload);
+// Show the upload button when a specific message is received
+function handleCustomCommand(command) {
+  if (command === 'showUploadButton') {
+    const uploadButton = document.getElementById('upload-file-button');
+    if (uploadButton) {
+      uploadButton.style.display = 'block';
+    }
+  }
+}
+
+// Wait for the Voiceflow chat widget to load and then initialize the file upload
+document.addEventListener('DOMContentLoaded', () => {
+  const checkChatLoaded = setInterval(() => {
+    if (window.voiceflow && window.voiceflow.chat) {
+      clearInterval(checkChatLoaded);
+      initFileUpload();
+
+      // Listen for custom commands from Voiceflow
+      window.voiceflow.chat.on('customCommand', handleCustomCommand);
+    }
+  }, 1000);
+});
