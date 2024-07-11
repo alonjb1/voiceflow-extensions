@@ -69,7 +69,11 @@ function handleCustomCommand(command) {
     if (uploadButton) {
       uploadButton.style.display = 'block';
       console.log('Upload button displayed.');
+    } else {
+      console.log('Upload button not found.');
     }
+  } else {
+    console.log('Unknown command:', command);
   }
 }
 
@@ -78,6 +82,8 @@ window.addEventListener('message', (event) => {
   console.log('Received message:', event.data);
   if (event.data && event.data.command) {
     handleCustomCommand(event.data.command);
+  } else {
+    console.log('No command in message:', event.data);
   }
 });
 
