@@ -64,19 +64,27 @@ function handleCustomCommand(command) {
   }
 }
 
+// Polling function to check for custom commands
+function pollCustomCommand() {
+  const chatIframe = document.querySelector('#voiceflow-chat iframe');
+  if (chatIframe) {
+    chatIframe.contentWindow.postMessage({ type: 'getCustomCommand' }, '*');
+  }
+}
+
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'customCommand' && event.data.command) {
+    handleCustomCommand(event.data.command);
+  }
+});
+
 // Wait for the Voiceflow chat widget to load and then initialize the file upload
 document.addEventListener('DOMContentLoaded', () => {
   const checkChatLoaded = setInterval(() => {
-    if (window.voiceflow && window.voiceflow.chat) {
+    if (document.querySelector('#voiceflow-chat iframe')) {
       clearInterval(checkChatLoaded);
       initFileUpload();
-
-      // Listen for custom commands from Voiceflow
-      window.voiceflow.chat.on('customCommand', (data) => {
-        if (data.command) {
-          handleCustomCommand(data.command);
-        }
-      });
+      setInterval(pollCustomCommand, 1000); // Poll for custom commands every second
     }
   }, 1000);
 });
