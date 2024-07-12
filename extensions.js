@@ -17,7 +17,7 @@ export const FileUploadExtension = {
         }
       </style>
       <div class='my-file-upload'>Drag and drop a file here or click to upload</div>
-      <input type='file' style='display: none;'>
+      <input type='file' id='file-upload-input' name='file-upload-input' style='display: none;'>
     `
 
     const fileInput = fileUploadContainer.querySelector('input[type=file]')
@@ -41,6 +41,7 @@ export const FileUploadExtension = {
         body: data,
       })
         .then((response) => {
+          console.log('Fetch response:', response);
           if (response.ok) {
             return response.json()
           } else {
@@ -48,15 +49,20 @@ export const FileUploadExtension = {
           }
         })
         .then((result) => {
-          fileUploadContainer.innerHTML =
-            '<img src="https://s3.amazonaws.com/com.voiceflow.studio/share/check/check.gif" alt="Done" width="50" height="50">'
-          console.log('File uploaded:', result.url)
-          window.voiceflow.chat.interact({
-            type: 'complete',
-            payload: {
-              file: result.url,
-            },
-          })
+          console.log('Result:', result);
+          if (result.url) {
+            fileUploadContainer.innerHTML =
+              '<img src="https://s3.amazonaws.com/com.voiceflow.studio/share/check/check.gif" alt="Done" width="50" height="50">'
+            console.log('File uploaded:', result.url)
+            window.voiceflow.chat.interact({
+              type: 'complete',
+              payload: {
+                file: result.url,
+              },
+            })
+          } else {
+            throw new Error('No URL in result: ' + JSON.stringify(result));
+          }
         })
         .catch((error) => {
           console.error(error)
