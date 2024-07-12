@@ -36,7 +36,7 @@ export const FileUploadExtension = {
       var data = new FormData()
       data.append('file', file)
 
-      fetch('https://script.google.com/macros/s/AKfycbwD3liiURpZfQwE3KJPoBFFpgbDtyVsUolv6dZkS6fvXxmn7Uio90fuo5R-iYNAATz2/exec', {
+      fetch('https://script.google.com/macros/s/AKfycbyuLWb13NU8l6EWVdMJUBIu42yNZsSXsNg9_S7WavtYUINv2SweyK-mGnEUPGWwEcks/exec', {
         method: 'POST',
         body: data,
       })
