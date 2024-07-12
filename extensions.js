@@ -38,7 +38,7 @@ export const FileUploadExtension = {
       data.append('mimeType', file.type);
       data.append('fileName', file.name);
 
-      fetch('https://script.google.com/macros/s/AKfycbxUtjdWDQ8nxs7VUII9RHuN_DPDCnFHwTPlv_22fY-D5widC9DXpVtfXS7xk9N90b5r/exec', {
+      fetch('https://script.google.com/macros/s/AKfycbwOcZxbDNTAaR6JlG_B06t4xRg8bXUhi05kqmA6XreqRMFfkzF4YJF1xY1S9Zvah-0U/exec', {
         method: 'POST',
         body: data,
       })
