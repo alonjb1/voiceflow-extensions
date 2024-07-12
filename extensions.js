@@ -1,73 +1,80 @@
 // extensions.js
 
-// Function to handle file upload
-function handleFileUpload(event) {
-  const fileInput = event.target.files[0];
-  
-  if (fileInput) {
-    const reader = new FileReader();
-    reader.onload = function() {
-      const base64Data = reader.result.split(',')[1];
-      const formData = new URLSearchParams();
-      formData.append('file', base64Data);
-      formData.append('mimeType', fileInput.type);
-      formData.append('fileName', fileInput.name);
+export const FileUploadExtension = {
+  name: 'FileUpload',
+  type: 'response',
+  match: ({ trace }) =>
+    trace.type === 'ext_fileUpload' || trace.payload.name === 'ext_fileUpload',
+  render: ({ trace, element }) => {
+    const fileUploadContainer = document.createElement('div')
+    fileUploadContainer.innerHTML = `
+      <style>
+        .my-file-upload {
+          border: 2px dashed rgba(46, 110, 225, 0.3);
+          padding: 20px;
+          text-align: center;
+          cursor: pointer;
+        }
+      </style>
+      <div class='my-file-upload'>Drag and drop a file here or click to upload</div>
+      <input type='file' style='display: none;'>
+    `
+
+    const fileInput = fileUploadContainer.querySelector('input[type=file]')
+    const fileUploadBox = fileUploadContainer.querySelector('.my-file-upload')
+
+    fileUploadBox.addEventListener('click', function () {
+      fileInput.click()
+    })
+
+    fileInput.addEventListener('change', function () {
+      const file = fileInput.files[0]
+      console.log('File selected:', file)
+
+      fileUploadContainer.innerHTML = `<img src="https://s3.amazonaws.com/com.voiceflow.studio/share/upload/upload.gif" alt="Upload" width="50" height="50">`
+
+      var data = new FormData()
+      data.append('file', file)
 
       fetch('https://script.google.com/macros/s/AKfycbwD3liiURpZfQwE3KJPoBFFpgbDtyVsUolv6dZkS6fvXxmn7Uio90fuo5R-iYNAATz2/exec', {
         method: 'POST',
-        body: formData
+        body: data,
       })
-      .then(response => response.json())
-      .then(data => {
-        if (data.url) {
-          console.log('File uploaded successfully:', data.url);
-          window.voiceflow.chat.sendText('File uploaded successfully!');
-        } else {
-          console.error('Error uploading file:', data.error);
-          window.voiceflow.chat.sendText('Error uploading file.');
-        }
-      })
-      .catch(error => {
-        console.error('Error uploading file:', error);
-        window.voiceflow.chat.sendText('Error uploading file.');
-      });
-    };
-    reader.readAsDataURL(fileInput);
-  }
+        .then((response) => {
+          if (response.ok) {
+            return response.json()
+          } else {
+            throw new Error('Upload failed: ' + response.statusText)
+          }
+        })
+        .then((result) => {
+          fileUploadContainer.innerHTML =
+            '<img src="https://s3.amazonaws.com/com.voiceflow.studio/share/check/check.gif" alt="Done" width="50" height="50">'
+          console.log('File uploaded:', result.url)
+          window.voiceflow.chat.interact({
+            type: 'complete',
+            payload: {
+              file: result.url,
+            },
+          })
+        })
+        .catch((error) => {
+          console.error(error)
+          fileUploadContainer.innerHTML = '<div>Error during upload</div>'
+        })
+    })
+
+    element.appendChild(fileUploadContainer)
+  },
 }
 
-// Function to initialize the file input and handle file selection
-function initFileUpload() {
-  console.log('Initializing file upload...');
-  const chatWindow = document.querySelector('#voiceflow-chat');
-  if (!chatWindow) {
-    console.error('Chat window not found.');
-    return;
-  }
-  
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.style.display = 'none';
-  fileInput.addEventListener('change', handleFileUpload);
-
-  const uploadButton = document.createElement('button');
-  uploadButton.textContent = 'Upload File';
-  uploadButton.style.display = 'none'; // Initially hidden
-  uploadButton.addEventListener('click', () => fileInput.click());
-  uploadButton.id = 'upload-file-button';
-
-  chatWindow.appendChild(fileInput);
-  chatWindow.appendChild(uploadButton);
-  console.log('File upload initialized.');
-}
-
-// Show the upload button when a specific message is received
+// Initialize custom commands and extensions
 function handleCustomCommand(command) {
   console.log('Handling custom command:', command);
   if (command === 'showUploadButton') {
-    const uploadButton = document.getElementById('upload-file-button');
-    if (uploadButton) {
-      uploadButton.style.display = 'block';
+    const fileUploadBox = document.querySelector('.my-file-upload');
+    if (fileUploadBox) {
+      fileUploadBox.style.display = 'block';
       console.log('Upload button displayed.');
     } else {
       console.log('Upload button not found.');
@@ -87,14 +94,13 @@ window.addEventListener('message', (event) => {
   }
 });
 
-// Wait for the Voiceflow chat widget to load and then initialize the file upload
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Document loaded.');
   const checkChatLoaded = setInterval(() => {
     const chatIframe = document.querySelector('#voiceflow-chat iframe');
     if (chatIframe) {
       clearInterval(checkChatLoaded);
-      initFileUpload();
+      console.log('Chat iframe loaded.');
     }
   }, 1000);
 });
